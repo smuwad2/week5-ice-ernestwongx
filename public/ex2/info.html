@@ -27,7 +27,7 @@
                 const typeVal = document.getElementById("type").value;
                 const limitVal = document.getElementById("limit").value;
                 try {
-                    await axios.get("/data", {
+                    const response = await axios.get("/data", {
                         params : {
                             "type" : typeVal,
                             "limit" : limitVal
