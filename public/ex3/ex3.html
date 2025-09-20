@@ -21,7 +21,7 @@
                 <select class="form-select" onchange="getItems()" id="selectCategory">
                     <option value="0">To select</option>
                     <option value="all">All</option>
-
+                    
                 </select>
             </div>
         </div>
@@ -33,32 +33,93 @@
     </div>
     
     <script>
-        function getCategories() {
+        async function getCategories() {
             // Fetch categories from the server using Axios
             // and display them in the select element
             // url: http://localhost:3010/categories
-
+            try{
+                const response = await axios.get("/categories");
+                showCategories(response.data);
+            } catch(error){
+                console.log(error);
+            }
         }
 
         function showCategories(categories) {
             // Display the categories in the select element
-            
+            const selectElm = document.getElementById("selectCategory");
+            for(const category of categories){
+                const optionElem = document.createElement("option");
+                optionElem.innerText = category;
+                optionElem.value = category;
+                selectElm.appendChild(optionElem);
+            }
         }
 
-        function getItems() {
+        async function getItems() {
             // Fetch items based on the selected category
             // If "To select" is chosen, do nothing
             // If "All" is chosen, fetch all items
             // If a specific category is chosen, fetch items for that category
             // url: http://localhost:3010/items?category=categoryName
-            
+            const selectedElm = document.getElementById("selectCategory").value;
+            if(selectedElm === 0){
+                const divElm = document.getElementById("itemsList");
+                divElm.innerText = '<p class="text-center">No items</p>';
+            }
+            try{
+                if(selectedElm === 'all'){
+                    response = await axios.get("/items");
+                } else{
+                    response = await axios.get("/items", {
+                        params : {
+                            category : selectedElm
+                        }
+                    });
+                }
+                showItems(response.data);
+            } catch(error){
+                console.log(error);
+            }
         }
 
         function showItems(items) {
             // Display the items in the itemsList div
             // Each item should be displayed in a bootstrap card format
             // The display should be responsive 3 columns on large screens, 2 columns on medium screens, and 1 column on small screens
-            
+            const divElm = document.getElementById("itemsList");
+            while(divElm.firstChild){
+                divElm.firstChild.remove();
+            }
+            if (!items || items.length === 0) {
+                divElm.innerText = '<p class="text-center">No items</p>';
+                return;
+            }
+
+            for(const item of items){
+                const colDiv = document.createElement("div");
+                colDiv.className = "col-lg-4 col-md-6 col-sm-12 mb-3";
+
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+
+                const cardBody = document.createElement("div");
+                cardBody.className = "card-body";
+
+                const cardTitle = document.createElement("h5");
+                cardTitle.className = "card-title";
+                cardTitle.innerText = item.name;
+
+                const cardText = document.createElement("p");
+                cardText.className = "card-text";
+                cardText.innerText = "Price: $" + item.price.toFixed(2);
+
+                cardBody.appendChild(cardTitle);
+                cardBody.appendChild(cardText);
+                cardDiv.appendChild(cardBody);
+                colDiv.appendChild(cardDiv);
+                divElm.appendChild(colDiv);
+            }
 
         }
 
